@@ -63,20 +63,24 @@ git clone https://github.com/YOURUSERNAME/ED-Tracker.git
 cd ED-Tracker
 npm install
 npm run dev
+```
 
 Open:
 http://localhost:5173
 
-📁 Project Structure
+
+## 📁 Project Structure
+```bash
 src/
   App.jsx          # Main UI + state management
   App.css          # Table + panel styling
   index.css        # Global styling + layout rules
 public/
-  ...
+```
 
-  📌 Roadmap
-🔜 Coming Next
+## 📌 Roadmap
+
+### 🔜 Coming Next
 Add patient form (modal)
 Editable notes
 Editable patient status
@@ -84,7 +88,8 @@ Colour-coded NEWS badges
 Auto-updating "Time in department"
 Sorting & filtering: triage, referral, status
 Disposition (admit/discharge) flow
-🔥 Future Features
+
+### 🔥 Future Features
 Login system
 Cloud backend (Firebase or Express/Postgres)
 Persist patient data
@@ -94,11 +99,11 @@ Task audit trail
 Safeguarding / sepsis flags
 Export to PDF
 Mobile ED tablet mode
-🤝 Contributing
+
+## 🤝 Contributing
 Pull requests welcome.
 If you'd like to suggest features or improvements, open an issue.
-📄 License
-MIT License.
-👨‍⚕️ Author
+
+## 👨‍⚕️ Author
 Built by Dr. Muhammed Omarjee
 Clinician • Developer • Health-Tech Innovator
