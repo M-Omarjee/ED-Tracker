@@ -1,0 +1,213 @@
+.app {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  padding: 16px;
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #0b7a7a;
+  color: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.primary-btn {
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  background: #0b7a7a;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primary-btn:hover {
+  opacity: 0.9;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.table-card,
+.detail-card {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  width: 100%;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+
+th,
+td {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+tr:hover {
+  background: #f0f9f9;
+  cursor: pointer;
+}
+
+.triage-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  margin-right: 6px;
+}
+
+.triage-red {
+  background: #e53935;
+}
+
+.triage-amber {
+  background: #ffb300;
+}
+
+.triage-green {
+  background: #43a047;
+}
+
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.block-label {
+  display: block;
+  margin-top: 12px;
+}
+
+textarea {
+  width: 100%;
+  min-height: 100px;
+  margin-top: 4px;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  resize: vertical;
+}
+
+.tasks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+  align-items: center;
+}
+
+.imaging-input {
+  grid-column: 1 / -1;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.news-section {
+  margin-top: 16px;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: #0b63d1;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 4px;
+}
+
+.full-width {
+  width: 100%;
+  margin-top: 16px;
+}
+.table-card h2 {
+  margin: 0 0 8px;
+  color: #333;
+}
+
+th,
+td {
+  color: #333;
+  font-size: 14px;
+}
+/* FORCE LIGHT MODE INPUT STYLING */
+input[type="text"],
+textarea,
+select {
+  background: white !important;
+  color: #333 !important;
+  border: 1px solid #ccc !important;
+}
+
+textarea::placeholder,
+input::placeholder {
+  color: #888 !important;
+}
+
+/* BIG, CLEAR CUSTOM CHECKBOXES */
+input[type="checkbox"] {
+  /* remove default tiny checkbox */
+  -webkit-appearance: none;
+  appearance: none;
+
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 2px solid #0b7a7a;
+  background: #ffffff;
+  cursor: pointer;
+  position: relative;
+  vertical-align: middle;
+}
+
+input[type="checkbox"]:checked {
+  background: #0b7a7a;
+}
+
+input[type="checkbox"]:checked::after {
+  content: "✓";
+  position: absolute;
+  color: #ffffff;
+  font-size: 14px;
+  left: 3px;
+  top: -1px;
+}
+
+
+/* FIX LABEL VISIBILITY */
+label,
+.detail-card p,
+.detail-card strong {
+  color: #333 !important;
+}
+
+/* Fix the white background depth */
+.detail-card {
+  background: #ffffff !important;
+}
+
+table th,
+table td {
+  vertical-align: middle;
+  padding: 10px 12px;
+}
+table th,
+table td {
+  text-align: left;
+}
