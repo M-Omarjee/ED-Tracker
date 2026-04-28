@@ -1262,3 +1262,211 @@ table td {
   color: #1e293b;
   font-variant-numeric: tabular-nums;
 }
+
+/* Live timer columns in PatientTable */
+.cell-time {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.seen-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #d1fae5;
+  color: #065f46;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.seen-pill-time {
+  font-weight: 400;
+  color: #047857;
+  font-variant-numeric: tabular-nums;
+}
+
+.ttc-waiting {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* NEWS chart tabs */
+.news-tabs {
+  display: flex;
+  gap: 4px;
+  margin: 12px 0 8px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.news-tab-btn {
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  margin-bottom: -1px;
+}
+
+.news-tab-btn:hover {
+  color: #0b7a7a;
+}
+
+.news-tab-btn.active {
+  color: #0b7a7a;
+  border-bottom-color: #0b7a7a;
+}
+
+.news-tab-panel {
+  padding-top: 4px;
+}
+
+/* Reference grid */
+.reference-wrap {
+  overflow-x: auto;
+  margin-top: 8px;
+}
+
+.reference-grid {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  table-layout: fixed;
+}
+
+.reference-grid th,
+.reference-grid td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 6px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.reference-grid thead th {
+  background: #f1f5f9;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #475569;
+}
+
+.reference-score-header th {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.ref-row-label {
+  text-align: left !important;
+  font-weight: 600;
+  background: #f8fafc;
+  width: 28%;
+  color: #1e293b;
+}
+
+.ref-cell-0 {
+  background: #ffffff;
+  color: #1e293b;
+}
+
+.ref-cell-1 {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.ref-cell-2 {
+  background: #fed7aa;
+  color: #9a3412;
+}
+
+.ref-cell-2-3 {
+  background: linear-gradient(90deg, #fed7aa 0%, #fecaca 100%);
+  color: #7f1d1d;
+}
+
+.ref-cell-3 {
+  background: #fecaca;
+  color: #991b1b;
+}
+
+.ref-cell-empty {
+  background: #f1f5f9 !important;
+  color: #cbd5e1 !important;
+}
+
+.ref-cell-highlight {
+  outline: 2px solid #0b7a7a;
+  outline-offset: -3px;
+  font-weight: 700;
+}
+
+.reference-caption {
+  font-size: 11px;
+  color: #64748b;
+  font-style: italic;
+  margin: 8px 0 0 0;
+}
+
+/* Trend grid */
+.trend-wrap {
+  overflow-x: auto;
+  margin-top: 8px;
+}
+
+.trend-grid {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.trend-grid th,
+.trend-grid td {
+  border: 1px solid #e2e8f0;
+  padding: 6px 8px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.trend-grid thead th {
+  background: #f1f5f9;
+  font-size: 11px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.trend-row-label {
+  text-align: left !important;
+  background: #f8fafc;
+  font-weight: 600;
+  color: #1e293b;
+  min-width: 80px;
+}
+
+.trend-cell {
+  font-weight: 500;
+  min-width: 60px;
+}
+
+.trend-cell-score {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.trend-time {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}

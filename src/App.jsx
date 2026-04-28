@@ -32,84 +32,101 @@ const emptyTasks = {
   referral: false,
 };
 
-const initialPatients = [
-  {
-    id: 1,
-    patientId: "H123456",
-    name: "John Smith",
-    address: "24 Green Street, London E1 6AA",
-    gpName: "Dr Patel",
-    gpPractice: "Whitechapel Health Centre",
-    gpPhone: "0207 123 4567",
+function buildInitialPatients() {
+  const now = Date.now();
+  // Demo patients pretend to have arrived 3h57m and 2h10m ago
+  const johnArrival = new Date(now - (3 * 60 + 57) * 60 * 1000).toISOString();
+  const sarahArrival = new Date(now - (2 * 60 + 10) * 60 * 1000).toISOString();
 
-    timeInDept: "3:57",
-    triage: "Red",
-    referral: "Medics",
-    phone: "07123 456789",
-    emergencyContact: "Jane Smith",
-    presentingComplaint: "Central chest pain",
-    status: "Waiting medical review",
+  return [
+    {
+      id: 1,
+      patientId: "H123456",
+      name: "John Smith",
+      address: "24 Green Street, London E1 6AA",
+      gpName: "Dr Patel",
+      gpPractice: "Whitechapel Health Centre",
+      gpPhone: "0207 123 4567",
 
-    newsScore: 4,
-    newsHistory: [
-      {
-        time: "13:40",
-        rr: "22",
-        spo2: "95",
-        o2: "Air",
-        temp: "37.5",
-        sbp: "110",
-        hr: "104",
-        avpu: "A",
-        score: "4",
-      },
-    ],
+      arrivalAt: johnArrival,
+      clinicianSeenAt: null,
+      dischargedAt: null,
 
-    notes: [],
-    tasks: { ...emptyTasks },
-    imagingText: "",
-    referralChoice: "Medics",
-    news2Scale: "scale1",
-  },
-  {
-    id: 2,
-    patientId: "H987654",
-    name: "Sarah Ahmed",
-    address: "12 Oak Avenue, London N1 4QR",
-    gpName: "Dr Williams",
-    gpPractice: "North Road Medical Centre",
-    gpPhone: "0208 222 1133",
+      triage: "Red",
+      referral: "Medics",
+      phone: "07123 456789",
+      emergencyContact: "Jane Smith",
+      presentingComplaint: "Central chest pain",
+      status: "Waiting medical review",
 
-    timeInDept: "2:10",
-    triage: "Amber",
-    referral: "Surgeons",
-    phone: "07111 222333",
-    emergencyContact: "Mother",
-    presentingComplaint: "RIF pain",
-    status: "Waiting surgical review",
+      newsScore: 4,
+      newsHistory: [
+        {
+          time: "13:40",
+          rr: "22",
+          spo2: "95",
+          o2: "Air",
+          temp: "37.5",
+          sbp: "110",
+          hr: "104",
+          avpu: "A",
+          score: "4",
+        },
+      ],
 
-    newsScore: 2,
-    newsHistory: [
-      {
-        time: "13:50",
-        rr: "18",
-        spo2: "98",
-        o2: "Air",
-        temp: "36.9",
-        sbp: "120",
-        hr: "88",
-        avpu: "A",
-        score: "2",
-      },
-    ],
+      notes: [],
+      tasks: { ...emptyTasks },
+      imagingText: "",
+      referralChoice: "Medics",
+      news2Scale: "scale1",
+      bloodResults: [],
+    },
+    {
+      id: 2,
+      patientId: "H987654",
+      name: "Sarah Ahmed",
+      address: "12 Oak Avenue, London N1 4QR",
+      gpName: "Dr Williams",
+      gpPractice: "North Road Medical Centre",
+      gpPhone: "0208 222 1133",
 
-    notes: [],
-    tasks: { ...emptyTasks },
-    imagingText: "",
-    referralChoice: "Surgeons",
-    news2Scale: "scale1",
-  },
-];
+      arrivalAt: sarahArrival,
+      clinicianSeenAt: null,
+      dischargedAt: null,
+
+      triage: "Amber",
+      referral: "Surgeons",
+      phone: "07111 222333",
+      emergencyContact: "Mother",
+      presentingComplaint: "RIF pain",
+      status: "Waiting surgical review",
+
+      newsScore: 2,
+      newsHistory: [
+        {
+          time: "13:50",
+          rr: "18",
+          spo2: "98",
+          o2: "Air",
+          temp: "36.9",
+          sbp: "120",
+          hr: "88",
+          avpu: "A",
+          score: "2",
+        },
+      ],
+
+      notes: [],
+      tasks: { ...emptyTasks },
+      imagingText: "",
+      referralChoice: "Surgeons",
+      news2Scale: "scale1",
+      bloodResults: [],
+    },
+  ];
+}
+
+const initialPatients = buildInitialPatients();
 
 const STORAGE_KEY = "ed-tracker-patients-v1";
 
@@ -173,6 +190,15 @@ function App() {
   const [dischargePreview, setDischargePreview] = useState(null);
   const [dischargingPatientId, setDischargingPatientId] = useState(null);
 
+  // Live tick for timer displays. Updates every 30 seconds — fast
+  // enough that "Time in dept" feels live, slow enough to not thrash
+  // React's render cycle. Components compute their own h:mm strings
+  // off this tick.
+  const [nowTick, setNowTick] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNowTick(Date.now()), 30000);
+    return () => clearInterval(id);
+  }, []);
   // Persist patients whenever they change
   useEffect(() => {
     try {
@@ -248,7 +274,7 @@ function App() {
       )
     )
       return;
-    setPatients(initialPatients);
+    setPatients(buildInitialPatients());
     setSelectedPatientId(null);
   };
 
@@ -270,12 +296,20 @@ function App() {
       setDischargePreview(null);
       return;
     }
-    setPatients((prev) => prev.filter((p) => p.id !== idToRemove));
-    if (selectedPatientId === idToRemove) {
-      setSelectedPatientId(null);
-    }
-    setDischargingPatientId(null);
-    setDischargePreview(null);
+    // Stamp dischargedAt before removal — preserves the timestamp if we
+    // ever add an "audit log of discharged patients" view
+    updatePatient(idToRemove, () => ({
+      dischargedAt: new Date().toISOString(),
+    }));
+    // Use a microtask to let the state update settle before removing
+    setTimeout(() => {
+      setPatients((prev) => prev.filter((p) => p.id !== idToRemove));
+      if (selectedPatientId === idToRemove) {
+        setSelectedPatientId(null);
+      }
+      setDischargingPatientId(null);
+      setDischargePreview(null);
+    }, 0);
   };
 
   const handleCancelDischarge = () => {
@@ -309,9 +343,14 @@ function App() {
       authorUsername: currentUser.username,
       createdAt: now.toISOString(),
     };
-    updatePatient(payload.patientId, (p) => ({
-      notes: [...(p.notes || []), newNote],
-    }));
+    updatePatient(payload.patientId, (p) => {
+      const update = { notes: [...(p.notes || []), newNote] };
+      // Stamp clinicianSeenAt the first time a Doctor submits a note
+      if (!p.clinicianSeenAt && currentUser.role === "Doctor") {
+        update.clinicianSeenAt = now.toISOString();
+      }
+      return update;
+    });
     setNote("");
   };
 
@@ -465,32 +504,36 @@ const commitBloodsEntry = (payload) => {
     const nextId =
       patients.length === 0 ? 1 : Math.max(...patients.map((p) => p.id)) + 1;
 
-    const created = {
-      id: nextId,
-      patientId: newPatient.patientId.trim() || `H${100000 + nextId}`,
-      name: newPatient.name.trim(),
-      address: newPatient.address.trim(),
-      gpName: newPatient.gpName.trim(),
-      gpPractice: newPatient.gpPractice.trim(),
-      gpPhone: newPatient.gpPhone.trim(),
-
-      timeInDept: "0:00",
-      triage: newPatient.triage,
-      referral: "—",
-      phone: newPatient.phone.trim(),
-      emergencyContact: newPatient.emergencyContact.trim(),
-      presentingComplaint: newPatient.presentingComplaint.trim(),
-      status: "Awaiting clinician",
-
-      newsScore: 0,
-      newsHistory: [],
-
-      notes: [],
-      tasks: { ...emptyTasks },
-      imagingText: "",
-      referralChoice: referralOptions[0],
-      news2Scale: "scale1",
-    };
+      const created = {
+        id: nextId,
+        patientId: newPatient.patientId.trim() || `H${100000 + nextId}`,
+        name: newPatient.name.trim(),
+        address: newPatient.address.trim(),
+        gpName: newPatient.gpName.trim(),
+        gpPractice: newPatient.gpPractice.trim(),
+        gpPhone: newPatient.gpPhone.trim(),
+  
+        arrivalAt: new Date().toISOString(),
+        clinicianSeenAt: null,
+        dischargedAt: null,
+  
+        triage: newPatient.triage,
+        referral: "—",
+        phone: newPatient.phone.trim(),
+        emergencyContact: newPatient.emergencyContact.trim(),
+        presentingComplaint: newPatient.presentingComplaint.trim(),
+        status: "Awaiting clinician",
+  
+        newsScore: 0,
+        newsHistory: [],
+  
+        notes: [],
+        tasks: { ...emptyTasks },
+        imagingText: "",
+        referralChoice: referralOptions[0],
+        news2Scale: "scale1",
+        bloodResults: [],
+      };
 
     setPatients((prev) => [...prev, created]);
     setShowAddForm(false);
@@ -512,8 +555,12 @@ const commitBloodsEntry = (payload) => {
       />
 
       <div className="content">
-        <StatsBanner patients={patients} />
-        <PatientTable patients={patients} onRowClick={handleRowClick} />
+      <StatsBanner patients={patients} nowTick={nowTick} />
+        <PatientTable
+          patients={patients}
+          nowTick={nowTick}
+          onRowClick={handleRowClick}
+        />
 
         {selectedPatient && (
           <PatientDetail
