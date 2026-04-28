@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 import TopBar from "./components/TopBar";
+import StatsBanner from "./components/StatsBanner";
 import PatientTable from "./components/PatientTable";
 import PatientDetail from "./components/PatientDetail";
 import AddPatientModal from "./components/AddPatientModal";
 import ParsePreviewModal from "./components/ParsePreviewModal";
 import DischargeSummaryModal from "./components/DischargeSummaryModal";
+import LoginPage from "./components/LoginPage";
 import { extractClerking, generateDischargeSummary } from "./lib/llm";
+import { loadSession, saveSession, clearSession } from "./lib/auth";
 
 const referralOptions = [
   "Medics",
@@ -147,6 +150,7 @@ const emptyNewPatient = {
 };
 
 function App() {
+  const [currentUser, setCurrentUser] = useState(() => loadSession());
   const [patients, setPatients] = useState(
     () => loadPatientsFromStorage() || initialPatients
   );
@@ -214,7 +218,23 @@ function App() {
     if (!selectedPatientId) return;
     updatePatient(selectedPatientId, () => ({ news2Scale: scale }));
   };
+  const handleLogin = (user) => {
+    setCurrentUser(user);
+    saveSession(user);
+  };
 
+  const handleLogout = () => {
+    if (
+      !confirm(
+        "Sign out? Patient data on this device will be preserved for the next user."
+      )
+    )
+      return;
+    setCurrentUser(null);
+    setSelectedPatientId(null);
+    clearSession();
+  };
+  
   const handleResetDemo = () => {
     if (
       !confirm(
@@ -392,14 +412,22 @@ function App() {
     setNewPatient(emptyNewPatient);
   };
 
+  // Gate the entire app behind login
+  if (!currentUser) {
+    return <LoginPage onLogin={handleLogin} />;
+  }
+
   return (
     <div className="app">
       <TopBar
+        currentUser={currentUser}
         onAddPatient={() => setShowAddForm(true)}
         onResetDemo={handleResetDemo}
+        onLogout={handleLogout}
       />
 
       <div className="content">
+        <StatsBanner patients={patients} />
         <PatientTable patients={patients} onRowClick={handleRowClick} />
 
         {selectedPatient && (
