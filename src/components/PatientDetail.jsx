@@ -14,20 +14,23 @@ const referralOptions = [
 ];
 
 function PatientDetail({
-  patient,
-  note,
-  setNote,
-  newNews,
-  setNewNews,
-  onClose,
-  onSubmitNote,
-  onToggleTask,
-  onUpdateImagingText,
-  onUpdateReferralChoice,
-  onSetNews2Scale,
-  onAddNewsEntry,
-  onDischarge,
-}) {
+    patient,
+    note,
+    setNote,
+    newNews,
+    setNewNews,
+    parseInProgress,
+    dischargeInProgress,
+    onClose,
+    onSubmitNote,
+    onToggleTask,
+    onUpdateImagingText,
+    onUpdateReferralChoice,
+    onSetNews2Scale,
+    onAddNewsEntry,
+    onDischarge,
+    onParseClerking,
+  }) {
   const [showNewsChart, setShowNewsChart] = useState(false);
 
   return (
@@ -64,17 +67,26 @@ function PatientDetail({
         <textarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder="Clerking, plan, handover notes…"
+          placeholder="Clerking, plan, handover notes… (paste a narrative and click Parse to extract observations)"
         />
       </label>
 
-      <button
-        className="primary-btn"
-        style={{ marginTop: "8px" }}
-        onClick={onSubmitNote}
-      >
-        Submit Note
-      </button>
+      <div className="note-actions">
+        <button
+          className="primary-btn"
+          onClick={onSubmitNote}
+        >
+          Submit Note
+        </button>
+        <button
+          className="ghost-btn-dark"
+          onClick={onParseClerking}
+          disabled={parseInProgress || !note.trim()}
+          title="Use Claude to extract observations and presenting complaint from the free text"
+        >
+          {parseInProgress ? "Parsing…" : "✨ Parse with AI"}
+        </button>
+      </div>
 
       <div className="tasks">
         <label>
@@ -164,8 +176,14 @@ function PatientDetail({
         />
       )}
 
-      <button className="primary-btn full-width" onClick={onDischarge}>
-        Discharge Home
+<button
+        className="primary-btn full-width"
+        onClick={onDischarge}
+        disabled={dischargeInProgress}
+      >
+        {dischargeInProgress
+          ? "Generating discharge summary…"
+          : "✨ Discharge with AI summary"}
       </button>
     </div>
   );

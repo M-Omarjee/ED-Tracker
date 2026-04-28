@@ -4,6 +4,9 @@ import TopBar from "./components/TopBar";
 import PatientTable from "./components/PatientTable";
 import PatientDetail from "./components/PatientDetail";
 import AddPatientModal from "./components/AddPatientModal";
+import ParsePreviewModal from "./components/ParsePreviewModal";
+import DischargeSummaryModal from "./components/DischargeSummaryModal";
+import { extractClerking, generateDischargeSummary } from "./lib/llm";
 
 const referralOptions = [
   "Medics",
@@ -154,6 +157,11 @@ function App() {
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [newPatient, setNewPatient] = useState(emptyNewPatient);
+  const [parseInProgress, setParseInProgress] = useState(false);
+  const [parsePreview, setParsePreview] = useState(null); // {parsed, source, error} when modal should show
+  const [dischargeInProgress, setDischargeInProgress] = useState(false);
+  const [dischargePreview, setDischargePreview] = useState(null);
+  const [dischargingPatientId, setDischargingPatientId] = useState(null);
 
   // Persist patients whenever they change
   useEffect(() => {
@@ -218,10 +226,35 @@ function App() {
     setSelectedPatientId(null);
   };
 
-  const handleDischarge = () => {
-    if (!selectedPatientId) return;
-    setPatients((prev) => prev.filter((p) => p.id !== selectedPatientId));
-    setSelectedPatientId(null);
+  const handleDischarge = async () => {
+    if (!selectedPatientId || !selectedPatient) return;
+    setDischargeInProgress(true);
+    setDischargingPatientId(selectedPatientId);
+    try {
+      const result = await generateDischargeSummary(selectedPatient);
+      setDischargePreview(result);
+    } finally {
+      setDischargeInProgress(false);
+    }
+  };
+
+  const handleConfirmDischarge = () => {
+    const idToRemove = dischargingPatientId;
+    if (!idToRemove) {
+      setDischargePreview(null);
+      return;
+    }
+    setPatients((prev) => prev.filter((p) => p.id !== idToRemove));
+    if (selectedPatientId === idToRemove) {
+      setSelectedPatientId(null);
+    }
+    setDischargingPatientId(null);
+    setDischargePreview(null);
+  };
+
+  const handleCancelDischarge = () => {
+    setDischargePreview(null);
+    setDischargingPatientId(null);
   };
 
   const handleSubmitNote = () => {
@@ -272,6 +305,52 @@ function App() {
     setNewNews(emptyNewNews);
   };
 
+  const handleParseClerking = async () => {
+    if (!note.trim() || !selectedPatientId) return;
+    setParseInProgress(true);
+    try {
+      const result = await extractClerking(note);
+      setParsePreview(result);
+    } finally {
+      setParseInProgress(false);
+    }
+  };
+
+  const handleApplyParse = (data) => {
+    if (!selectedPatientId) {
+      setParsePreview(null);
+      return;
+    }
+    updatePatient(selectedPatientId, (p) => {
+      const update = {};
+      if (data.presentingComplaint) {
+        update.presentingComplaint = data.presentingComplaint;
+      }
+      if (data.triage) {
+        update.triage = data.triage;
+      }
+      // Pre-fill the NEWS observation form (does not save automatically;
+      // user reviews + clicks Save NEWS entry to commit)
+      return update;
+    });
+
+    // Pre-fill the NEWS form with the extracted obs so the user only
+    // has to click Save NEWS entry to commit them.
+    if (data.observations) {
+      setNewNews((n) => ({
+        ...n,
+        rr: data.observations.rr || "",
+        spo2: data.observations.spo2 || "",
+        o2: data.observations.o2 || "",
+        temp: data.observations.temp || "",
+        sbp: data.observations.sbp || "",
+        hr: data.observations.hr || "",
+        avpu: data.observations.avpu || "",
+      }));
+    }
+
+    setParsePreview(null);
+  };
   const handleAddPatient = () => {
     if (!newPatient.name.trim() || !newPatient.presentingComplaint.trim()) {
       alert("Name and presenting complaint are required.");
@@ -330,6 +409,8 @@ function App() {
             setNote={setNote}
             newNews={newNews}
             setNewNews={setNewNews}
+            parseInProgress={parseInProgress}
+            dischargeInProgress={dischargeInProgress}
             onClose={handleClosePatient}
             onSubmitNote={handleSubmitNote}
             onToggleTask={toggleTask}
@@ -338,6 +419,7 @@ function App() {
             onSetNews2Scale={setNews2Scale}
             onAddNewsEntry={handleAddNewsEntry}
             onDischarge={handleDischarge}
+            onParseClerking={handleParseClerking}
           />
         )}
       </div>
@@ -348,6 +430,30 @@ function App() {
           setNewPatient={setNewPatient}
           onClose={() => setShowAddForm(false)}
           onSubmit={handleAddPatient}
+        />
+      )}
+
+{parsePreview && (
+        <ParsePreviewModal
+          initialData={parsePreview.parsed}
+          source={parsePreview.source}
+          error={parsePreview.error}
+          onCancel={() => setParsePreview(null)}
+          onApply={handleApplyParse}
+        />
+      )}
+
+      {dischargePreview && dischargingPatientId !== null && (
+        <DischargeSummaryModal
+          patient={
+            patients.find((p) => p.id === dischargingPatientId) ||
+            selectedPatient
+          }
+          initialSummary={dischargePreview.summary}
+          source={dischargePreview.source}
+          error={dischargePreview.error}
+          onCancel={handleCancelDischarge}
+          onConfirmDischarge={handleConfirmDischarge}
         />
       )}
     </div>

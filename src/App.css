@@ -429,3 +429,102 @@ table td {
   background: #0b7a7a;
   color: white;
 }
+
+/* Note action row (Submit + Parse) */
+.note-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.ghost-btn-dark {
+  border: 1px solid #cbd5e1;
+  background: white;
+  color: #1e293b;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.ghost-btn-dark:hover:not(:disabled) {
+  background: #f1f5f9;
+}
+
+.ghost-btn-dark:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* AI source badges (in modals) */
+.ai-badge {
+  margin-top: 4px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.ai-badge-success {
+  background: #ecfeff;
+  border: 1px solid #67e8f9;
+  color: #155e75;
+}
+
+.ai-badge-warn {
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  color: #92400e;
+}
+
+/* Discharge summary modal */
+.modal-card-wide {
+  max-width: 880px;
+}
+
+.discharge-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.discharge-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* GP letter spans both columns since it's a paragraph */
+.discharge-field:last-child {
+  grid-column: 1 / -1;
+}
+
+.discharge-field-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.discharge-field textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+  background: white !important;
+  color: #1e293b !important;
+}
+
+.discharge-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
