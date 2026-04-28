@@ -59,7 +59,7 @@ When clicking on a patient:
 ## 📦 Installation
 
 ```bash
-git clone https://github.com/YOURUSERNAME/ED-Tracker.git
+git clone https://github.com/M-Omarjee/ed-tracker.git
 cd ED-Tracker
 npm install
 npm run dev

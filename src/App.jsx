@@ -13,6 +13,15 @@ const referralOptions = [
   "Psych",
 ];
 
+const triageOptions = ["Red", "Amber", "Green"];
+
+const emptyTasks = {
+  triage: false,
+  bloods: false,
+  imaging: false,
+  referral: false,
+};
+
 const initialPatients = [
   {
     id: 1,
@@ -47,6 +56,9 @@ const initialPatients = [
     ],
 
     notes: [],
+    tasks: { ...emptyTasks },
+    imagingText: "",
+    referralChoice: "Medics",
   },
   {
     id: 2,
@@ -81,6 +93,9 @@ const initialPatients = [
     ],
 
     notes: [],
+    tasks: { ...emptyTasks },
+    imagingText: "",
+    referralChoice: "Surgeons",
   },
 ];
 
@@ -89,15 +104,6 @@ function App() {
   const [selectedPatientId, setSelectedPatientId] = useState(null);
 
   const [note, setNote] = useState("");
-  const [tasks, setTasks] = useState({
-    triage: false,
-    bloods: false,
-    imaging: false,
-    referral: false,
-  });
-  const [imagingText, setImagingText] = useState("");
-  const [referral, setReferral] = useState(referralOptions[0]);
-
   const [showNewsChart, setShowNewsChart] = useState(false);
   const [newNews, setNewNews] = useState({
     time: "",
@@ -111,20 +117,33 @@ function App() {
     score: "",
   });
 
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newPatient, setNewPatient] = useState({
+    name: "",
+    patientId: "",
+    presentingComplaint: "",
+    triage: "Amber",
+    phone: "",
+    emergencyContact: "",
+    address: "",
+    gpName: "",
+    gpPractice: "",
+    gpPhone: "",
+  });
+
   const selectedPatient =
     patients.find((p) => p.id === selectedPatientId) || null;
+
+  // Generic helper: apply a partial update to a single patient by id
+  const updatePatient = (id, updater) => {
+    setPatients((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, ...updater(p) } : p))
+    );
+  };
 
   const handleRowClick = (id) => {
     setSelectedPatientId(id);
     setNote("");
-    setTasks({
-      triage: false,
-      bloods: false,
-      imaging: false,
-      referral: false,
-    });
-    setImagingText("");
-    setReferral(referralOptions[0]);
     setShowNewsChart(false);
     setNewNews({
       time: "",
@@ -140,14 +159,23 @@ function App() {
   };
 
   const toggleTask = (name) => {
-    setTasks((prev) => {
-      // if already done, do nothing
-      if (prev[name]) return prev;
-      // otherwise mark as done
-      return { ...prev, [name]: true };
+    if (!selectedPatientId) return;
+    updatePatient(selectedPatientId, (p) => {
+      // Once done, stays done — same behaviour as before
+      if (p.tasks?.[name]) return {};
+      return { tasks: { ...(p.tasks || emptyTasks), [name]: true } };
     });
   };
-  
+
+  const updateImagingText = (value) => {
+    if (!selectedPatientId) return;
+    updatePatient(selectedPatientId, () => ({ imagingText: value }));
+  };
+
+  const updateReferralChoice = (value) => {
+    if (!selectedPatientId) return;
+    updatePatient(selectedPatientId, () => ({ referralChoice: value }));
+  };
 
   const handleDischarge = () => {
     if (!selectedPatientId) return;
@@ -163,16 +191,9 @@ function App() {
       minute: "2-digit",
     });
 
-    const newNote = {
-      time: timestamp,
-      text: note.trim(),
-    };
-
-    const updatedPatients = patients.map((p) =>
-      p.id === selectedPatientId ? { ...p, notes: [...p.notes, newNote] } : p
-    );
-
-    setPatients(updatedPatients);
+    updatePatient(selectedPatientId, (p) => ({
+      notes: [...(p.notes || []), { time: timestamp, text: note.trim() }],
+    }));
     setNote("");
   };
 
@@ -198,17 +219,10 @@ function App() {
       score: newNews.score,
     };
 
-    const updatedPatients = patients.map((p) =>
-      p.id === selectedPatientId
-        ? {
-            ...p,
-            newsHistory: [...(p.newsHistory || []), entry],
-            newsScore: entry.score || p.newsScore,
-          }
-        : p
-    );
-
-    setPatients(updatedPatients);
+    updatePatient(selectedPatientId, (p) => ({
+      newsHistory: [...(p.newsHistory || []), entry],
+      newsScore: entry.score || p.newsScore,
+    }));
 
     setNewNews({
       time: "",
@@ -223,13 +237,68 @@ function App() {
     });
   };
 
+  const resetAddForm = () => {
+    setNewPatient({
+      name: "",
+      patientId: "",
+      presentingComplaint: "",
+      triage: "Amber",
+      phone: "",
+      emergencyContact: "",
+      address: "",
+      gpName: "",
+      gpPractice: "",
+      gpPhone: "",
+    });
+  };
+
+  const handleAddPatient = () => {
+    if (!newPatient.name.trim() || !newPatient.presentingComplaint.trim()) {
+      alert("Name and presenting complaint are required.");
+      return;
+    }
+
+    const nextId =
+      patients.length === 0 ? 1 : Math.max(...patients.map((p) => p.id)) + 1;
+
+    const created = {
+      id: nextId,
+      patientId: newPatient.patientId.trim() || `H${100000 + nextId}`,
+      name: newPatient.name.trim(),
+      address: newPatient.address.trim(),
+      gpName: newPatient.gpName.trim(),
+      gpPractice: newPatient.gpPractice.trim(),
+      gpPhone: newPatient.gpPhone.trim(),
+
+      timeInDept: "0:00",
+      triage: newPatient.triage,
+      referral: "—",
+      phone: newPatient.phone.trim(),
+      emergencyContact: newPatient.emergencyContact.trim(),
+      presentingComplaint: newPatient.presentingComplaint.trim(),
+      status: "Awaiting clinician",
+
+      newsScore: 0,
+      newsHistory: [],
+
+      notes: [],
+      tasks: { ...emptyTasks },
+      imagingText: "",
+      referralChoice: referralOptions[0],
+    };
+
+    setPatients((prev) => [...prev, created]);
+    setShowAddForm(false);
+    resetAddForm();
+  };
+
   return (
     <div className="app">
       <header className="top-bar">
         <h1>ED Tracker</h1>
         <button
           className="primary-btn"
-          onClick={() => alert("Add Patient form coming soon")}
+          onClick={() => setShowAddForm(true)}
         >
           Add Patient
         </button>
@@ -288,15 +357,17 @@ function App() {
             </div>
 
             <div className="contact-banner">
-  <div><strong>Patient ID:</strong> {selectedPatient.patientId}</div>
-  <div><strong>Address:</strong> {selectedPatient.address}</div>
-  <div><strong>Phone:</strong> {selectedPatient.phone}</div>
-  <div><strong>Emergency Contact:</strong> {selectedPatient.emergencyContact}</div>
-  <div>
-    <strong>GP:</strong> {selectedPatient.gpName} ({selectedPatient.gpPractice}) – {selectedPatient.gpPhone}
-  </div>
-</div>
-
+              <div><strong>Patient ID:</strong> {selectedPatient.patientId}</div>
+              <div><strong>Address:</strong> {selectedPatient.address || "—"}</div>
+              <div><strong>Phone:</strong> {selectedPatient.phone || "—"}</div>
+              <div><strong>Emergency Contact:</strong> {selectedPatient.emergencyContact || "—"}</div>
+              <div>
+                <strong>GP:</strong>{" "}
+                {selectedPatient.gpName
+                  ? `${selectedPatient.gpName} (${selectedPatient.gpPractice}) – ${selectedPatient.gpPhone}`
+                  : "—"}
+              </div>
+            </div>
 
             <label className="block-label">
               Free text to document
@@ -319,8 +390,8 @@ function App() {
               <label>
                 <input
                   type="checkbox"
-                  checked={tasks.triage}
-                  disabled={tasks.triage}
+                  checked={!!selectedPatient.tasks?.triage}
+                  disabled={!!selectedPatient.tasks?.triage}
                   onChange={() => toggleTask("triage")}
                 />
                 Triage
@@ -328,8 +399,8 @@ function App() {
               <label>
                 <input
                   type="checkbox"
-                  checked={tasks.bloods}
-                  disabled={tasks.bloods}
+                  checked={!!selectedPatient.tasks?.bloods}
+                  disabled={!!selectedPatient.tasks?.bloods}
                   onChange={() => toggleTask("bloods")}
                 />
                 Bloods
@@ -337,8 +408,8 @@ function App() {
               <label>
                 <input
                   type="checkbox"
-                  checked={tasks.imaging}
-                  disabled={tasks.imaging}
+                  checked={!!selectedPatient.tasks?.imaging}
+                  disabled={!!selectedPatient.tasks?.imaging}
                   onChange={() => toggleTask("imaging")}
                 />
                 Imaging
@@ -346,22 +417,22 @@ function App() {
               <input
                 type="text"
                 className="imaging-input"
-                value={imagingText}
-                onChange={(e) => setImagingText(e.target.value)}
+                value={selectedPatient.imagingText || ""}
+                onChange={(e) => updateImagingText(e.target.value)}
                 placeholder="state imaging (e.g. CXR, CT head)"
               />
               <label>
                 <input
                   type="checkbox"
-                  checked={tasks.referral}
-                  disabled={tasks.referral}
+                  checked={!!selectedPatient.tasks?.referral}
+                  disabled={!!selectedPatient.tasks?.referral}
                   onChange={() => toggleTask("referral")}
                 />
                 Referral
               </label>
               <select
-                value={referral}
-                onChange={(e) => setReferral(e.target.value)}
+                value={selectedPatient.referralChoice || referralOptions[0]}
+                onChange={(e) => updateReferralChoice(e.target.value)}
               >
                 {referralOptions.map((opt) => (
                   <option key={opt}>{opt}</option>
@@ -371,11 +442,11 @@ function App() {
 
             <div style={{ marginTop: "16px" }}>
               <strong>Notes History:</strong>
-              {selectedPatient.notes.length === 0 && (
+              {(!selectedPatient.notes || selectedPatient.notes.length === 0) && (
                 <p style={{ color: "#666" }}>No notes yet.</p>
               )}
               <ul style={{ paddingLeft: "16px" }}>
-                {selectedPatient.notes.map((n, index) => (
+                {(selectedPatient.notes || []).map((n, index) => (
                   <li key={index} style={{ marginBottom: "6px" }}>
                     <strong>{n.time}:</strong> {n.text}
                   </li>
@@ -547,6 +618,148 @@ function App() {
           </div>
         )}
       </div>
+
+      {/* Add Patient modal */}
+      {showAddForm && (
+        <div
+          className="modal-backdrop"
+          onClick={() => setShowAddForm(false)}
+        >
+          <div
+            className="modal-card"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="detail-header">
+              <h2>Add patient</h2>
+              <button onClick={() => setShowAddForm(false)}>Close</button>
+            </div>
+
+            <div className="add-form">
+              <label>
+                Name *
+                <input
+                  type="text"
+                  value={newPatient.name}
+                  onChange={(e) =>
+                    setNewPatient((n) => ({ ...n, name: e.target.value }))
+                  }
+                  placeholder="Surname, First name"
+                />
+              </label>
+              <label>
+                Patient ID
+                <input
+                  type="text"
+                  value={newPatient.patientId}
+                  onChange={(e) =>
+                    setNewPatient((n) => ({ ...n, patientId: e.target.value }))
+                  }
+                  placeholder="e.g. H123456"
+                />
+              </label>
+              <label className="full-row">
+                Presenting complaint *
+                <input
+                  type="text"
+                  value={newPatient.presentingComplaint}
+                  onChange={(e) =>
+                    setNewPatient((n) => ({
+                      ...n,
+                      presentingComplaint: e.target.value,
+                    }))
+                  }
+                  placeholder="e.g. Central chest pain"
+                />
+              </label>
+              <label>
+                Triage
+                <select
+                  value={newPatient.triage}
+                  onChange={(e) =>
+                    setNewPatient((n) => ({ ...n, triage: e.target.value }))
+                  }
+                >
+                  {triageOptions.map((opt) => (
+                    <option key={opt}>{opt}</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Phone
+                <input
+                  type="text"
+                  value={newPatient.phone}
+                  onChange={(e) =>
+                    setNewPatient((n) => ({ ...n, phone: e.target.value }))
+                  }
+                  placeholder="07…"
+                />
+              </label>
+              <label className="full-row">
+                Address
+                <input
+                  type="text"
+                  value={newPatient.address}
+                  onChange={(e) =>
+                    setNewPatient((n) => ({ ...n, address: e.target.value }))
+                  }
+                />
+              </label>
+              <label>
+                Emergency contact
+                <input
+                  type="text"
+                  value={newPatient.emergencyContact}
+                  onChange={(e) =>
+                    setNewPatient((n) => ({
+                      ...n,
+                      emergencyContact: e.target.value,
+                    }))
+                  }
+                />
+              </label>
+              <label>
+                GP name
+                <input
+                  type="text"
+                  value={newPatient.gpName}
+                  onChange={(e) =>
+                    setNewPatient((n) => ({ ...n, gpName: e.target.value }))
+                  }
+                />
+              </label>
+              <label>
+                GP practice
+                <input
+                  type="text"
+                  value={newPatient.gpPractice}
+                  onChange={(e) =>
+                    setNewPatient((n) => ({ ...n, gpPractice: e.target.value }))
+                  }
+                />
+              </label>
+              <label>
+                GP phone
+                <input
+                  type="text"
+                  value={newPatient.gpPhone}
+                  onChange={(e) =>
+                    setNewPatient((n) => ({ ...n, gpPhone: e.target.value }))
+                  }
+                />
+              </label>
+            </div>
+
+            <button
+              className="primary-btn full-width"
+              style={{ marginTop: "16px" }}
+              onClick={handleAddPatient}
+            >
+              Add patient
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
