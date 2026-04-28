@@ -13,7 +13,7 @@ A doctor-built web app for tracking patients in an Emergency Department, with tw
 
 **🔗 Live demo:** [ed-tracker-seven.vercel.app](https://ed-tracker-seven.vercel.app)
 
-Built by a foundation doctor who got tired of the friction between writing free-text clerkings and filling in identical structured fields, and of writing the same discharge summary patterns by hand at the end of every shift.
+Built by a doctor who got tired of the friction between writing free-text clerkings and filling in identical structured fields, and of writing the same discharge summary patterns by hand at the end of every shift.
 
 ---
 
