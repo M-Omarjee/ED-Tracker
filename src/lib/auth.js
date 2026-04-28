@@ -58,6 +58,22 @@ export const DEMO_USERS = [
     const { password: _pw, ...safe } = match;
     return safe;
   }
+
+  /**
+ * Verify a password for a given username — used for re-auth before
+ * signing a clinical entry. Returns true if the password matches.
+ *
+ * In a production system this would be a server round-trip to a
+ * bcrypt comparison. Here it's the same cleartext check as login.
+ */
+export function verifyPassword(username, password) {
+    const u = String(username || "").trim().toLowerCase();
+    const p = String(password || "");
+    const match = DEMO_USERS.find(
+      (user) => user.username === u && user.password === p
+    );
+    return Boolean(match);
+  }
   
   /**
    * Read the persisted session from localStorage, or null.

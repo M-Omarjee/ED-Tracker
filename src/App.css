@@ -852,3 +852,154 @@ table td {
   letter-spacing: 0.4px;
   color: rgba(255, 255, 255, 0.75);
 }
+
+/* Author pill on note cards */
+.note-author-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #ecfeff;
+  color: #155e75;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid #cffafe;
+}
+
+.note-author-pill-role {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #0e7490;
+  font-weight: 700;
+}
+
+.note-card-clickable {
+  cursor: pointer;
+}
+
+.note-card-clickable:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+/* Note detail modal */
+.note-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-top: 12px;
+}
+
+.note-meta-row {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.note-meta-label {
+  color: #64748b;
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  align-self: center;
+}
+
+.note-meta-value {
+  color: #1e293b;
+  font-weight: 500;
+}
+
+.note-meta-username {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: #475569;
+  font-size: 12px;
+}
+
+.note-meta-legacy {
+  color: #92400e;
+  font-style: italic;
+  font-size: 12px;
+}
+
+.note-body {
+  margin-top: 14px;
+}
+
+.note-body-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  color: #64748b;
+  margin-bottom: 6px;
+}
+
+.note-body-text {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 14px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #1e293b;
+}
+
+.note-locked-banner {
+  margin-top: 14px;
+  padding: 10px 12px;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  color: #78350f;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* Password confirm modal */
+.confirm-tagline {
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.5;
+  margin: 4px 0 16px 0;
+}
+
+.confirm-tagline strong {
+  color: #1e293b;
+}
+
+.confirm-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.confirm-disclaimer {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #e2e8f0;
+  font-size: 11px;
+  color: #92400e;
+  background: #fffbeb;
+  border-radius: 0 0 0 0;
+  padding: 12px;
+  border: 1px solid #fcd34d;
+  border-radius: 6px;
+  line-height: 1.5;
+}

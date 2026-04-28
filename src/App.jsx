@@ -8,6 +8,7 @@ import AddPatientModal from "./components/AddPatientModal";
 import ParsePreviewModal from "./components/ParsePreviewModal";
 import DischargeSummaryModal from "./components/DischargeSummaryModal";
 import LoginPage from "./components/LoginPage";
+import PasswordConfirmModal from "./components/PasswordConfirmModal";
 import { extractClerking, generateDischargeSummary } from "./lib/llm";
 import { loadSession, saveSession, clearSession } from "./lib/auth";
 
@@ -163,6 +164,9 @@ function App() {
   const [newPatient, setNewPatient] = useState(emptyNewPatient);
   const [parseInProgress, setParseInProgress] = useState(false);
   const [parsePreview, setParsePreview] = useState(null); // {parsed, source, error} when modal should show
+  // Pending action awaiting password re-verify.
+  // { kind: 'note' | 'news', payload: any } or null.
+  const [pendingSignedAction, setPendingSignedAction] = useState(null);
   const [dischargeInProgress, setDischargeInProgress] = useState(false);
   const [dischargePreview, setDischargePreview] = useState(null);
   const [dischargingPatientId, setDischargingPatientId] = useState(null);
@@ -277,22 +281,41 @@ function App() {
     setDischargingPatientId(null);
   };
 
+  // Step 1: clinician clicks Submit Note → we show the password modal.
+  // The actual write happens after password verification.
   const handleSubmitNote = () => {
-    if (!note.trim() || !selectedPatientId) return;
+    if (!note.trim() || !selectedPatientId || !currentUser) return;
+    setPendingSignedAction({
+      kind: "note",
+      payload: { text: note.trim(), patientId: selectedPatientId },
+    });
+  };
 
-    const timestamp = new Date().toLocaleTimeString([], {
+  // Step 2: password verified → actually save the note.
+  const commitNote = (payload) => {
+    const now = new Date();
+    const timestamp = now.toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
     });
-
-    updatePatient(selectedPatientId, (p) => ({
-      notes: [...(p.notes || []), { time: timestamp, text: note.trim() }],
+    const newNote = {
+      id: `note-${now.getTime()}-${Math.random().toString(36).slice(2, 8)}`,
+      time: timestamp,
+      text: payload.text,
+      authorName: currentUser.name,
+      authorRole: currentUser.role,
+      authorUsername: currentUser.username,
+      createdAt: now.toISOString(),
+    };
+    updatePatient(payload.patientId, (p) => ({
+      notes: [...(p.notes || []), newNote],
     }));
     setNote("");
   };
 
+  // Step 1: clinician clicks Save NEWS entry → we show the password modal.
   const handleAddNewsEntry = (liveNews) => {
-    if (!selectedPatientId) return;
+    if (!selectedPatientId || !currentUser) return;
     if (!liveNews || liveNews.total === null) {
       alert("Please enter at least one observation before saving.");
       return;
@@ -305,24 +328,53 @@ function App() {
         minute: "2-digit",
       });
 
-    const entry = {
-      time: timestamp,
-      rr: newNews.rr,
-      spo2: newNews.spo2,
-      o2: newNews.o2,
-      temp: newNews.temp,
-      sbp: newNews.sbp,
-      hr: newNews.hr,
-      avpu: newNews.avpu,
-      score: String(liveNews.total),
+    setPendingSignedAction({
+      kind: "news",
+      payload: {
+        patientId: selectedPatientId,
+        entry: {
+          time: timestamp,
+          rr: newNews.rr,
+          spo2: newNews.spo2,
+          o2: newNews.o2,
+          temp: newNews.temp,
+          sbp: newNews.sbp,
+          hr: newNews.hr,
+          avpu: newNews.avpu,
+          score: String(liveNews.total),
+        },
+        total: liveNews.total,
+      },
+    });
+  };
+
+  // Step 2: password verified → actually save the NEWS entry.
+  const commitNewsEntry = (payload) => {
+    const now = new Date();
+    const entryWithMeta = {
+      ...payload.entry,
+      id: `news-${now.getTime()}-${Math.random().toString(36).slice(2, 8)}`,
+      authorName: currentUser.name,
+      authorRole: currentUser.role,
+      authorUsername: currentUser.username,
+      createdAt: now.toISOString(),
     };
-
-    updatePatient(selectedPatientId, (p) => ({
-      newsHistory: [...(p.newsHistory || []), entry],
-      newsScore: liveNews.total,
+    updatePatient(payload.patientId, (p) => ({
+      newsHistory: [...(p.newsHistory || []), entryWithMeta],
+      newsScore: payload.total,
     }));
-
     setNewNews(emptyNewNews);
+  };
+
+  // Dispatcher called by PasswordConfirmModal once password verified.
+  const handleSignedActionConfirmed = () => {
+    if (!pendingSignedAction) return;
+    if (pendingSignedAction.kind === "note") {
+      commitNote(pendingSignedAction.payload);
+    } else if (pendingSignedAction.kind === "news") {
+      commitNewsEntry(pendingSignedAction.payload);
+    }
+    setPendingSignedAction(null);
   };
 
   const handleParseClerking = async () => {
@@ -471,7 +523,7 @@ function App() {
         />
       )}
 
-      {dischargePreview && dischargingPatientId !== null && (
+{dischargePreview && dischargingPatientId !== null && (
         <DischargeSummaryModal
           patient={
             patients.find((p) => p.id === dischargingPatientId) ||
@@ -482,6 +534,19 @@ function App() {
           error={dischargePreview.error}
           onCancel={handleCancelDischarge}
           onConfirmDischarge={handleConfirmDischarge}
+        />
+      )}
+
+      {pendingSignedAction && currentUser && (
+        <PasswordConfirmModal
+          user={currentUser}
+          action={
+            pendingSignedAction.kind === "note"
+              ? "sign this clinical note"
+              : "sign this NEWS entry"
+          }
+          onCancel={() => setPendingSignedAction(null)}
+          onConfirmed={handleSignedActionConfirmed}
         />
       )}
     </div>
