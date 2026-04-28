@@ -23,7 +23,9 @@ Style:
 - Use SI units, NHS conventions, MIMS abbreviations where standard (e.g. PO, IV, IM, BD, TDS)
 - No speculation beyond what the data supports
 - Reference NEWS scores and trends explicitly
-- If observations were never recorded, say "observations not documented" rather than inventing values
+- Reference blood results explicitly when available — quote actual values (e.g. "Troponin 8 ng/L (normal)", "CRP 12 mg/L"), not vague phrases. Distinguish lab bloods from blood gas (note gas type: VBG/ABG/CBG)
+- Note the timing of bloods: if sampleTakenAt and resultsAvailableAt are both present, the time-to-result is clinically relevant
+- If observations or bloods were never recorded, say "observations not documented" / "no bloods recorded" rather than inventing values
 
 Required output: a single JSON object with exactly these keys, no markdown, no commentary:
 
@@ -59,6 +61,7 @@ export default async function handler(req, res) {
   }
 
   // Build a focused payload — strip internal UI state, keep clinical data
+  // Build a focused payload — strip internal UI state, keep clinical data
   const payload = {
     name: patient.name,
     patientId: patient.patientId,
@@ -72,6 +75,7 @@ export default async function handler(req, res) {
     newsScore: patient.newsScore,
     newsHistory: patient.newsHistory || [],
     news2Scale: patient.news2Scale || "scale1",
+    bloodResults: patient.bloodResults || [],
   };
 
   const apiKey = process.env.ANTHROPIC_API_KEY;

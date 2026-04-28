@@ -9,6 +9,7 @@ import ParsePreviewModal from "./components/ParsePreviewModal";
 import DischargeSummaryModal from "./components/DischargeSummaryModal";
 import LoginPage from "./components/LoginPage";
 import PasswordConfirmModal from "./components/PasswordConfirmModal";
+import BloodsModal from "./components/BloodsModal";
 import { extractClerking, generateDischargeSummary } from "./lib/llm";
 import { loadSession, saveSession, clearSession } from "./lib/auth";
 
@@ -167,6 +168,7 @@ function App() {
   // Pending action awaiting password re-verify.
   // { kind: 'note' | 'news', payload: any } or null.
   const [pendingSignedAction, setPendingSignedAction] = useState(null);
+  const [showBloodsModal, setShowBloodsModal] = useState(false);
   const [dischargeInProgress, setDischargeInProgress] = useState(false);
   const [dischargePreview, setDischargePreview] = useState(null);
   const [dischargingPatientId, setDischargingPatientId] = useState(null);
@@ -347,6 +349,35 @@ function App() {
       },
     });
   };
+// BLOODS — same two-step pattern as note + NEWS
+
+const handleSubmitBloods = (data) => {
+  if (!selectedPatientId || !currentUser) return;
+  setShowBloodsModal(false);
+  setPendingSignedAction({
+    kind: "bloods",
+    payload: { patientId: selectedPatientId, ...data },
+  });
+};
+
+const commitBloodsEntry = (payload) => {
+  const now = new Date();
+  const entry = {
+    id: `blood-${now.getTime()}-${Math.random().toString(36).slice(2, 8)}`,
+    sampleTakenAt: payload.sampleTakenAt,
+    resultsAvailableAt: payload.resultsAvailableAt,
+    panels: payload.panels,
+    authorName: currentUser.name,
+    authorRole: currentUser.role,
+    authorUsername: currentUser.username,
+    createdAt: now.toISOString(),
+  };
+  updatePatient(payload.patientId, (p) => ({
+    bloodResults: [...(p.bloodResults || []), entry],
+    // Auto-tick the bloods task once results are entered
+    tasks: { ...(p.tasks || {}), bloods: true },
+  }));
+};
 
   // Step 2: password verified → actually save the NEWS entry.
   const commitNewsEntry = (payload) => {
@@ -373,6 +404,8 @@ function App() {
       commitNote(pendingSignedAction.payload);
     } else if (pendingSignedAction.kind === "news") {
       commitNewsEntry(pendingSignedAction.payload);
+    } else if (pendingSignedAction.kind === "bloods") {
+      commitBloodsEntry(pendingSignedAction.payload);
     }
     setPendingSignedAction(null);
   };
@@ -500,6 +533,7 @@ function App() {
             onAddNewsEntry={handleAddNewsEntry}
             onDischarge={handleDischarge}
             onParseClerking={handleParseClerking}
+            onOpenBloodsModal={() => setShowBloodsModal(true)}
           />
         )}
       </div>
@@ -537,16 +571,25 @@ function App() {
         />
       )}
 
-      {pendingSignedAction && currentUser && (
+{pendingSignedAction && currentUser && (
         <PasswordConfirmModal
           user={currentUser}
           action={
             pendingSignedAction.kind === "note"
               ? "sign this clinical note"
-              : "sign this NEWS entry"
+              : pendingSignedAction.kind === "news"
+              ? "sign this NEWS entry"
+              : "sign these blood results"
           }
           onCancel={() => setPendingSignedAction(null)}
           onConfirmed={handleSignedActionConfirmed}
+        />
+      )}
+
+      {showBloodsModal && currentUser && (
+        <BloodsModal
+          onCancel={() => setShowBloodsModal(false)}
+          onSubmit={handleSubmitBloods}
         />
       )}
     </div>

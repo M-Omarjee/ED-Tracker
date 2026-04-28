@@ -1,5 +1,7 @@
 import { useState } from "react";
 import NewsChart from "./NewsChart";
+import NotesHistory from "./NotesHistory";
+import BloodsHistory from "./BloodsHistory";
 
 const referralOptions = [
   "Medics",
@@ -30,7 +32,9 @@ function PatientDetail({
     onAddNewsEntry,
     onDischarge,
     onParseClerking,
+    onOpenBloodsModal,
   }) {
+
   const [showNewsChart, setShowNewsChart] = useState(false);
 
   return (
@@ -107,6 +111,14 @@ function PatientDetail({
           />
           Bloods
         </label>
+        <button
+          type="button"
+          className="ghost-btn-dark bloods-add-btn"
+          onClick={onOpenBloodsModal}
+          title="Record structured blood results (signed entry)"
+        >
+          + Add bloods result
+        </button>
         <label>
           <input
             type="checkbox"
@@ -142,19 +154,8 @@ function PatientDetail({
         </select>
       </div>
 
-      <div style={{ marginTop: "16px" }}>
-        <strong>Notes History:</strong>
-        {(!patient.notes || patient.notes.length === 0) && (
-          <p style={{ color: "#666" }}>No notes yet.</p>
-        )}
-        <ul style={{ paddingLeft: "16px" }}>
-          {(patient.notes || []).map((n, index) => (
-            <li key={index} style={{ marginBottom: "6px" }}>
-              <strong>{n.time}:</strong> {n.text}
-            </li>
-          ))}
-        </ul>
-      </div>
+      <NotesHistory notes={patient.notes} />
+      <BloodsHistory bloodResults={patient.bloodResults} />
 
       <div className="news-section">
         <strong>NEWS:</strong> {patient.newsScore}

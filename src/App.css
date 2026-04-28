@@ -1003,3 +1003,262 @@ table td {
   border-radius: 6px;
   line-height: 1.5;
 }
+
+/* Bloods modal */
+.bloods-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.bloods-meta label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #334155;
+}
+
+.bloods-meta input {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  font-size: 14px;
+  background: white !important;
+  color: #1e293b !important;
+}
+
+.optional {
+  font-size: 11px;
+  font-weight: 400;
+  color: #94a3b8;
+  margin-left: 4px;
+}
+
+.bloods-panels {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.bloods-panel {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: #f8fafc;
+}
+
+.bloods-panel-title {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #0b7a7a;
+}
+
+.bloods-panel-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px 12px;
+}
+
+.bloods-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  color: #475569;
+}
+
+.bloods-field input {
+  padding: 6px 8px;
+  border-radius: 4px;
+  border: 1px solid #cbd5e1;
+  font-size: 13px;
+  background: white !important;
+  color: #1e293b !important;
+}
+
+.bloods-field input:disabled {
+  background: #f1f5f9 !important;
+  cursor: not-allowed;
+}
+
+.bloods-panel-gas {
+  background: #ecfeff;
+  border-color: #67e8f9;
+}
+
+.bloods-gas-type {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.bloods-gas-type-label {
+  font-size: 12px;
+  color: #475569;
+  font-weight: 500;
+}
+
+.gas-type-btn {
+  border: 1px solid #67e8f9;
+  background: white;
+  color: #155e75;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.gas-type-btn:hover {
+  background: #cffafe;
+}
+
+.gas-type-btn.active {
+  background: #0e7490;
+  color: white;
+  border-color: #0e7490;
+}
+
+.bloods-gas-hint {
+  margin: 8px 0 0 0;
+  font-size: 11px;
+  color: #92400e;
+  font-style: italic;
+}
+
+/* Bloods add button (in tasks row) */
+.bloods-add-btn {
+  grid-column: 1 / -1;
+  font-size: 13px;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+/* Bloods history list (PatientDetail) */
+.bloods-history {
+  margin-top: 16px;
+}
+
+.bloods-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bloods-entry-card {
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.bloods-entry-card:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.bloods-entry-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: #475569;
+}
+
+.bloods-entry-time,
+.bloods-entry-results {
+  font-variant-numeric: tabular-nums;
+}
+
+.bloods-entry-results {
+  color: #0e7490;
+}
+
+.bloods-entry-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+  color: #1e293b;
+}
+
+.bloods-summary-row {
+  display: flex;
+  gap: 8px;
+}
+
+.bloods-summary-label {
+  font-weight: 600;
+  color: #475569;
+  min-width: 70px;
+}
+
+.bloods-summary-values {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+}
+
+/* Bloods detail modal */
+.bloods-detail-panels {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bloods-detail-panel {
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 10px 12px;
+  background: #f8fafc;
+}
+
+.bloods-detail-panel-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #0b7a7a;
+  margin-bottom: 6px;
+}
+
+.bloods-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 6px 12px;
+}
+
+.bloods-detail-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bloods-detail-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.3px;
+}
+
+.bloods-detail-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  font-variant-numeric: tabular-nums;
+}
