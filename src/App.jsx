@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { calculateNews2, newsRiskBand } from "./lib/news";
 import "./App.css";
 
 const referralOptions = [
@@ -59,6 +60,7 @@ const initialPatients = [
     tasks: { ...emptyTasks },
     imagingText: "",
     referralChoice: "Medics",
+    news2Scale: "scale1",
   },
   {
     id: 2,
@@ -96,6 +98,7 @@ const initialPatients = [
     tasks: { ...emptyTasks },
     imagingText: "",
     referralChoice: "Surgeons",
+    news2Scale: "scale1",
   },
 ];
 
@@ -233,8 +236,26 @@ function App() {
     setNote("");
   };
 
+  // Live NEWS2 calculation as the user types — uses the patient's
+  // selected scale (scale1 default, scale2 for hypercapnic respiratory
+  // failure)
+  const activeScale = selectedPatient?.news2Scale || "scale1";
+  const liveNews = useMemo(
+    () => calculateNews2(newNews, activeScale),
+    [newNews, activeScale]
+  );
+
+  const setNews2Scale = (scale) => {
+    if (!selectedPatientId) return;
+    updatePatient(selectedPatientId, () => ({ news2Scale: scale }));
+  };
+
   const handleAddNewsEntry = () => {
     if (!selectedPatientId) return;
+    if (liveNews.total === null) {
+      alert("Please enter at least one observation before saving.");
+      return;
+    }
 
     const timestamp =
       newNews.time ||
@@ -252,12 +273,12 @@ function App() {
       sbp: newNews.sbp,
       hr: newNews.hr,
       avpu: newNews.avpu,
-      score: newNews.score,
+      score: String(liveNews.total),
     };
 
     updatePatient(selectedPatientId, (p) => ({
       newsHistory: [...(p.newsHistory || []), entry],
-      newsScore: entry.score || p.newsScore,
+      newsScore: liveNews.total,
     }));
 
     setNewNews({
@@ -511,7 +532,31 @@ function App() {
 
             {showNewsChart && (
               <div className="news-card">
-                <h3>NEWS chart</h3>
+                <div className="news-header">
+                  <h3>NEWS chart</h3>
+                  <div className="scale-toggle" role="group" aria-label="NEWS2 SpO2 scale">
+                    <button
+                      type="button"
+                      className={`scale-btn ${
+                        activeScale === "scale1" ? "active" : ""
+                      }`}
+                      onClick={() => setNews2Scale("scale1")}
+                      title="Standard adult scale (target SpO2 ≥96%)"
+                    >
+                      Scale 1
+                    </button>
+                    <button
+                      type="button"
+                      className={`scale-btn ${
+                        activeScale === "scale2" ? "active" : ""
+                      }`}
+                      onClick={() => setNews2Scale("scale2")}
+                      title="Hypercapnic respiratory failure (target SpO2 88-92%)"
+                    >
+                      Scale 2
+                    </button>
+                  </div>
+                </div>
 
                 <table className="news-table">
                   <thead>
@@ -633,14 +678,14 @@ function App() {
                     />
                   </label>
                   <label>
-                    NEWS
-                    <input
-                      type="number"
-                      value={newNews.score}
-                      onChange={(e) =>
-                        setNewNews((n) => ({ ...n, score: e.target.value }))
-                      }
-                    />
+                    NEWS (auto, {activeScale === "scale2" ? "Scale 2" : "Scale 1"})
+                    <div
+                      className={`news-auto news-band-${newsRiskBand(
+                        liveNews.total
+                      )}`}
+                    >
+                      {liveNews.total === null ? "—" : liveNews.total}
+                    </div>
                   </label>
                 </div>
 

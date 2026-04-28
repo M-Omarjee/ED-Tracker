@@ -348,3 +348,84 @@ table td {
 .ghost-btn:hover {
   background: rgba(255, 255, 255, 0.12);
 }
+
+/* Auto-calculated NEWS display */
+.news-auto {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+  padding: 6px 10px;
+  font-weight: 700;
+  font-size: 16px;
+  border-radius: 6px;
+  background: #eef2f7;
+  color: #1e293b;
+  min-width: 48px;
+}
+
+.news-band-unknown {
+  background: #eef2f7;
+  color: #475569;
+}
+
+.news-band-low {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.news-band-low-medium {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.news-band-medium {
+  background: #fed7aa;
+  color: #9a3412;
+}
+
+.news-band-high {
+  background: #fecaca;
+  color: #991b1b;
+}
+
+/* NEWS chart header with scale toggle */
+.news-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.news-header h3 {
+  margin: 0;
+}
+
+.scale-toggle {
+  display: inline-flex;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #f8fafc;
+}
+
+.scale-btn {
+  border: 0;
+  background: transparent;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #475569;
+  cursor: pointer;
+}
+
+.scale-btn:hover {
+  background: #e2e8f0;
+}
+
+.scale-btn.active {
+  background: #0b7a7a;
+  color: white;
+}
