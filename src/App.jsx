@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./App.css";
 
 const referralOptions = [
@@ -99,8 +99,25 @@ const initialPatients = [
   },
 ];
 
+const STORAGE_KEY = "ed-tracker-patients-v1";
+
+function loadPatientsFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return null;
+    return parsed;
+  } catch (err) {
+    console.warn("Failed to load patients from localStorage", err);
+    return null;
+  }
+}
+
 function App() {
-  const [patients, setPatients] = useState(initialPatients);
+  const [patients, setPatients] = useState(
+    () => loadPatientsFromStorage() || initialPatients
+  );
   const [selectedPatientId, setSelectedPatientId] = useState(null);
 
   const [note, setNote] = useState("");
@@ -131,6 +148,25 @@ function App() {
     gpPhone: "",
   });
 
+  // Persist patients whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(patients));
+    } catch (err) {
+      console.warn("Failed to save patients to localStorage", err);
+    }
+  }, [patients]);
+
+  const handleResetDemo = () => {
+    if (
+      !confirm(
+        "Reset to demo data? This will discard all patients you've added."
+      )
+    )
+      return;
+    setPatients(initialPatients);
+    setSelectedPatientId(null);
+  };
   const selectedPatient =
     patients.find((p) => p.id === selectedPatientId) || null;
 
@@ -296,12 +332,21 @@ function App() {
     <div className="app">
       <header className="top-bar">
         <h1>ED Tracker</h1>
-        <button
-          className="primary-btn"
-          onClick={() => setShowAddForm(true)}
-        >
-          Add Patient
-        </button>
+        <div className="top-bar-actions">
+          <button
+            className="ghost-btn"
+            onClick={handleResetDemo}
+            title="Reset patient list to the original demo data"
+          >
+            Reset demo
+          </button>
+          <button
+            className="primary-btn"
+            onClick={() => setShowAddForm(true)}
+          >
+            Add Patient
+          </button>
+        </div>
       </header>
 
       <div className="content">

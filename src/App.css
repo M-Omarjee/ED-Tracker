@@ -326,3 +326,25 @@ table td {
 .add-form .full-row {
   grid-column: 1 / -1;
 }
+
+/* Header action group + secondary button */
+.top-bar-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.ghost-btn {
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: transparent;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.ghost-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
