@@ -74,15 +74,18 @@ This is the feature that would actually save time on a shift. Discharge summarie
 
 ## Architecture
 
+```
 Browser (React)                     Vercel                          Anthropic[free text input]    ──POST──▶   /api/extract-clerking   ──POST──▶  Claude API
 (serverless function)               (sk-ant-... lives here,
 │                              never in the bundle)
 [parsed obs]        ◀──JSON───        │
 reads ANTHROPIC_API_KEY
 from Vercel env vars
+```
 
 Two serverless functions handle Claude calls; the React app never sees the API key.
 
+```
 ED-Tracker/
 ├── api/
 │   ├── extract-clerking.js          # narrative → structured JSON
@@ -103,6 +106,7 @@ ED-Tracker/
 │       └── DischargeSummaryModal.jsx # AI discharge review + PDF export
 └── assets/
 └── screenshots/                  # README images
+```
 
 **Stack:** React 19, Vite 7, plain CSS, jsPDF, `@anthropic-ai/sdk`, Vercel Functions. No backend database, no auth, no patient data ever leaves the user's browser except the narrative paste/discharge generation calls — which go to Claude via Vercel.
 
