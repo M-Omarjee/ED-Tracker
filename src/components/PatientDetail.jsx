@@ -71,7 +71,7 @@ function PatientDetail({
         <textarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder="Clerking, plan, handover notes… (paste a narrative and click Parse to extract observations)"
+          placeholder="Clerking, plan, handover notes… (paste a narrative and click Autofill to extract observations)"
         />
       </label>
 
@@ -83,12 +83,13 @@ function PatientDetail({
           Submit Note
         </button>
         <button
-          className="ghost-btn-dark"
+          type="button"
+          className="ghost-btn-dark parse-btn"
           onClick={onParseClerking}
           disabled={parseInProgress || !note.trim()}
-          title="Use Claude to extract observations and presenting complaint from the free text"
+          title="Use Claude to fill in obs and presenting complaint from the note above"
         >
-          {parseInProgress ? "Parsing…" : "✨ Parse with AI"}
+          {parseInProgress ? "Filling in…" : "✨ Auto-fill with AI"}
         </button>
       </div>
 

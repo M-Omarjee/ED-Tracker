@@ -3,193 +3,8 @@ import { calculateNews2, newsRiskBand } from "../lib/news";
 
 const TABS = [
   { key: "entry", label: "Add entry" },
-  { key: "reference", label: "Reference grid" },
   { key: "trend", label: "Trend" },
 ];
-
-// RCP NEWS2 reference scoring bands (Scale 1).
-// Each row = parameter, each cell = display label + score.
-// Used both for the visual reference grid and to highlight which bands
-// triggered for the most recent observation.
-const REFERENCE_ROWS_SCALE_1 = [
-  {
-    key: "rr",
-    label: "Respiration rate (per min)",
-    cells: [
-      { range: "≤8", score: 3 },
-      { range: "9-11", score: 1 },
-      { range: "12-20", score: 0 },
-      { range: "—", score: 0, hidden: true },
-      { range: "21-24", score: 2 },
-      { range: "≥25", score: 3 },
-    ],
-  },
-  {
-    key: "spo2",
-    label: "SpO₂ Scale 1 (%)",
-    cells: [
-      { range: "≤91", score: 3 },
-      { range: "92-93", score: 2 },
-      { range: "94-95", score: 1 },
-      { range: "≥96", score: 0 },
-      { range: "—", score: 0, hidden: true },
-      { range: "—", score: 0, hidden: true },
-    ],
-  },
-  {
-    key: "o2",
-    label: "Air or oxygen?",
-    cells: [
-      { range: "—", score: 0, hidden: true },
-      { range: "Oxygen", score: 2 },
-      { range: "—", score: 0, hidden: true },
-      { range: "Air", score: 0 },
-      { range: "—", score: 0, hidden: true },
-      { range: "—", score: 0, hidden: true },
-    ],
-  },
-  {
-    key: "temp",
-    label: "Temperature (°C)",
-    cells: [
-      { range: "≤35.0", score: 3 },
-      { range: "—", score: 0, hidden: true },
-      { range: "35.1-36.0", score: 1 },
-      { range: "36.1-38.0", score: 0 },
-      { range: "38.1-39.0", score: 1 },
-      { range: "≥39.1", score: 2 },
-    ],
-  },
-  {
-    key: "sbp",
-    label: "Systolic BP (mmHg)",
-    cells: [
-      { range: "≤90", score: 3 },
-      { range: "91-100", score: 2 },
-      { range: "101-110", score: 1 },
-      { range: "111-219", score: 0 },
-      { range: "—", score: 0, hidden: true },
-      { range: "≥220", score: 3 },
-    ],
-  },
-  {
-    key: "hr",
-    label: "Heart rate (per min)",
-    cells: [
-      { range: "≤40", score: 3 },
-      { range: "—", score: 0, hidden: true },
-      { range: "41-50", score: 1 },
-      { range: "51-90", score: 0 },
-      { range: "91-110", score: 1 },
-      { range: "111-130, ≥131", score: 2 },
-    ],
-  },
-  {
-    key: "avpu",
-    label: "Consciousness",
-    cells: [
-      { range: "—", score: 0, hidden: true },
-      { range: "—", score: 0, hidden: true },
-      { range: "—", score: 0, hidden: true },
-      { range: "Alert", score: 0 },
-      { range: "—", score: 0, hidden: true },
-      { range: "V/P/U", score: 3 },
-    ],
-  },
-];
-
-const REFERENCE_ROWS_SCALE_2 = [
-  REFERENCE_ROWS_SCALE_1[0], // RR
-  {
-    key: "spo2",
-    label: "SpO₂ Scale 2 (%)",
-    cells: [
-      { range: "≤83", score: 3 },
-      { range: "84-85", score: 2 },
-      { range: "86-87", score: 1 },
-      { range: "88-92 (any), 93-94 air", score: 0 },
-      { range: "93-94 O₂", score: 1 },
-      { range: "95-96 O₂, ≥97 O₂", score: 2 },
-    ],
-  },
-  ...REFERENCE_ROWS_SCALE_1.slice(2),
-];
-
-// Determine which cell index (0-5) the patient's value falls into,
-// for highlighting in the reference grid.
-function findCellIndex(rowKey, value, scale, allObs) {
-  if (rowKey === "rr") {
-    const v = Number(value);
-    if (!Number.isFinite(v)) return null;
-    if (v <= 8) return 0;
-    if (v <= 11) return 1;
-    if (v <= 20) return 2;
-    if (v <= 24) return 4;
-    return 5;
-  }
-  if (rowKey === "spo2") {
-    const v = Number(value);
-    if (!Number.isFinite(v)) return null;
-    if (scale === "scale2") {
-      const onO2 =
-        allObs.o2 &&
-        String(allObs.o2).trim().toLowerCase() !== "" &&
-        String(allObs.o2).trim().toLowerCase() !== "air";
-      if (v <= 83) return 0;
-      if (v <= 85) return 1;
-      if (v <= 87) return 2;
-      if (v <= 92) return 3;
-      if (!onO2) return 3;
-      if (v <= 94) return 4;
-      return 5;
-    }
-    if (v <= 91) return 0;
-    if (v <= 93) return 1;
-    if (v <= 95) return 2;
-    return 3;
-  }
-  if (rowKey === "o2") {
-    if (!value) return null;
-    const lower = String(value).trim().toLowerCase();
-    if (lower === "" || lower === "air") return 3;
-    return 1;
-  }
-  if (rowKey === "temp") {
-    const v = Number(value);
-    if (!Number.isFinite(v)) return null;
-    if (v <= 35) return 0;
-    if (v <= 36) return 2;
-    if (v <= 38) return 3;
-    if (v <= 39) return 4;
-    return 5;
-  }
-  if (rowKey === "sbp") {
-    const v = Number(value);
-    if (!Number.isFinite(v)) return null;
-    if (v <= 90) return 0;
-    if (v <= 100) return 1;
-    if (v <= 110) return 2;
-    if (v <= 219) return 3;
-    return 5;
-  }
-  if (rowKey === "hr") {
-    const v = Number(value);
-    if (!Number.isFinite(v)) return null;
-    if (v <= 40) return 0;
-    if (v <= 50) return 2;
-    if (v <= 90) return 3;
-    if (v <= 110) return 4;
-    return 5;
-  }
-  if (rowKey === "avpu") {
-    if (!value) return null;
-    const v = String(value).trim().toUpperCase();
-    if (v === "A") return 3;
-    if (v === "V" || v === "P" || v === "U") return 5;
-    return null;
-  }
-  return null;
-}
 
 function scoreColourClass(score) {
   if (score === 0) return "ref-cell-0";
@@ -198,72 +13,8 @@ function scoreColourClass(score) {
   return "ref-cell-3";
 }
 
-// Trend chart traffic-light cell colour, matches scoreColourClass
 function trendCellColour(score) {
   return scoreColourClass(Number(score));
-}
-
-function ReferenceGrid({ scale, highlightObs }) {
-  const rows =
-    scale === "scale2" ? REFERENCE_ROWS_SCALE_2 : REFERENCE_ROWS_SCALE_1;
-
-  return (
-    <div className="reference-wrap">
-      <table className="reference-grid">
-        <thead>
-          <tr>
-            <th>Parameter</th>
-            <th colSpan={3}>Lower</th>
-            <th>Normal</th>
-            <th colSpan={2}>Upper</th>
-          </tr>
-          <tr className="reference-score-header">
-            <th></th>
-            <th className="ref-cell-3">+3</th>
-            <th className="ref-cell-2">+2</th>
-            <th className="ref-cell-1">+1</th>
-            <th className="ref-cell-0">0</th>
-            <th className="ref-cell-1">+1</th>
-            <th className="ref-cell-2-3">+2 / +3</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => {
-            const highlightIdx = highlightObs
-              ? findCellIndex(row.key, highlightObs[row.key], scale, highlightObs)
-              : null;
-            return (
-              <tr key={row.key}>
-                <td className="ref-row-label">{row.label}</td>
-                {row.cells.map((c, idx) => (
-                  <td
-                    key={idx}
-                    className={`${scoreColourClass(c.score)} ${
-                      idx === highlightIdx ? "ref-cell-highlight" : ""
-                    } ${c.hidden ? "ref-cell-empty" : ""}`}
-                    title={
-                      idx === highlightIdx
-                        ? `Triggered by latest obs (+${c.score})`
-                        : undefined
-                    }
-                  >
-                    {c.hidden ? "" : c.range}
-                  </td>
-                ))}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-
-      {highlightObs && (
-        <p className="reference-caption">
-          Cells with a teal border show which bands the latest observation
-          triggered.
-        </p>
-      )}
-    </div>
-  );
 }
 
 function TrendView({ history, scale }) {
@@ -358,18 +109,6 @@ function NewsChart({
     () => calculateNews2(newNews, activeScale),
     [newNews, activeScale]
   );
-
-  // Latest recorded obs (for the reference-grid highlights)
-  const latestObs = useMemo(() => {
-    const hist = patient.newsHistory || [];
-    if (hist.length === 0) return null;
-    const sorted = [...hist].sort((a, b) => {
-      const ka = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const kb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      return kb - ka;
-    });
-    return sorted[0];
-  }, [patient.newsHistory]);
 
   return (
     <div className="news-card">
@@ -504,12 +243,6 @@ function NewsChart({
           >
             Save NEWS entry
           </button>
-        </div>
-      )}
-
-      {tab === "reference" && (
-        <div className="news-tab-panel">
-          <ReferenceGrid scale={activeScale} highlightObs={latestObs} />
         </div>
       )}
 
